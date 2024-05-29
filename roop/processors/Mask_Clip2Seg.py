@@ -1,3 +1,4 @@
+import os
 import cv2
 import numpy as np
 import torch
@@ -12,25 +13,20 @@ THREAD_LOCK_CLIP = threading.Lock()
 
 
 class Mask_Clip2Seg():
-    plugin_options:dict = None
+
     model_clip = None
 
     processorname = 'clip2seg'
     type = 'mask'
 
 
-    def Initialize(self, plugin_options:dict):
-        if self.plugin_options is not None:
-            if self.plugin_options["devicename"] != plugin_options["devicename"]:
-                self.Release()
-
-        self.plugin_options = plugin_options
+    def Initialize(self, devicename):
         if self.model_clip is None:
             self.model_clip = CLIPDensePredT(version='ViT-B/16', reduce_dim=64, complex_trans_conv=True)
             self.model_clip.eval();
-            self.model_clip.load_state_dict(torch.load('models/CLIP/rd64-uni-refined.pth', map_location=torch.device('cpu')), strict=False)
+            self.model_clip.load_state_dict(torch.load('./models/CLIP/rd64-uni-refined.pth', map_location=torch.device('cuda')), strict=False)
 
-        device = torch.device(self.plugin_options["devicename"])
+        device = torch.device(devicename)
         self.model_clip.to(device)
 
 
